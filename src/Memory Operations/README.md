@@ -21,4 +21,23 @@ There are a few details:
 1. We use memory barrier to guarantee the accuracy of our measurement, i.e., `_mm_sfence` in `xmmintrin.h`.
 2. We use increasing size of linked list to draw a figure of latency-size figure. We will see that this figure has four platforms, representing three levels of cache and the main memory.
 3. One CPU cycle is needed to do the load instruction. So zero latency is defined as one CPU cycle.
-4. (TODO, do we need this?) Use multiple strides to see the min latency.
+4. (TODO: do we need this?) Use multiple strides to see the min latency.
+
+**Read bandwidth**
+Read bandwidth is the speed of data movement of the main memory.
+
+To measure it, we create an array of int (4 bytes in our machine), and measure the time of adding these int up, using a manually unrolled loop. We take the following steps:
+1. Create int array. This array is declared as a static int array. Otherwise the stack is not enough and will seg fault.
+2. Create two char arrays with a size larger than our cache, and use memcpy to copy one to another. This can fill the cache with garbage, so we can measure the main memory in the next steps. Also, these arrays are declared as global variables to avoid seg fault.
+3. Measure the execution CPU cycles of the unrolled loop. We unroll it 40000 times to minimize the overhead of loop.
+4. Repeat the steps 10 times to measure average time.
+
+**Page fault**
+Page fault is measured by the following steps:
+1. Create a file in disk.
+2. Flush page cache. (TODO: how to do this? madvise?)
+3. Map the file to memory.
+4. Disable page prefetch. (TODO: how to do this? madvise?)
+5. Fill cache with garbage.
+6. In each iteration of a loop, access just 1 byte of the file. Each iteration jumps a large step, to make sure the byte accessed is not in the same page. In this way, the number of iteration is the number of page fault.
+7. Repeat the steps 10 times to measure average time.

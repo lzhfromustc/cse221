@@ -3,7 +3,7 @@
 #include <string.h>
 #include <xmmintrin.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 
 uint64_t lat_mem(uint64_t);
 void garbage_use_ptr(void *);
