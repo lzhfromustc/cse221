@@ -1,0 +1,21 @@
+=====Starting memory latency measurement
+The size_of_linked_list: 256 512 1024 2048 4096 8192 16384 32768 65536 131072 262144 524288 1048576 2097152 4194304
+The total latency_of_mem_read: 303 527 1205 2229 4299 8435 16767 33443 68733 136633 277767 556041 1138331 2383451 5891455
+The average latency_of_mem_read: 1183 875 1324 1000 1010 1009 1017 1017 1076 1036 1076 1061 1110 1187 1672
+Please ignore this number:1640489008728120
+=====Finished memory latency measurement
+
+
+=====Starting memory bandwidth measurement
+Our int size is:4
+The bandwidth (CPU cycle) of reading 4.000000 MB in main memory:787636.000000
+Which is 19630.746094 MB/s
+Please ignore this number:16350430080
+=====Finished memory bandwidth measurement
+
+
+=====Starting page fault measurement
+Created a file of size 67108864 bytes
+Full path of the file:/home/test/cse221/src/Memory Operations/testFile.txt
+The average CPU cycles for each page fault:11010
+=====Finished page fault measurement
