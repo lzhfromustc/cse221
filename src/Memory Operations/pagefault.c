@@ -103,12 +103,13 @@ int measure_page_fault(uint64_t size_file, uint64_t iteration, uint64_t num_step
         }
 
         // sfence and measurement
-        _mm_sfence();
+        
         asm volatile("RDTSCP\n\t"
                         "mov %%edx, %0\n\t"
                         "mov %%eax, %1\n\t"
                         "CPUID\n\t"
                         : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
+        _mm_sfence();
 
         start = (((uint64_t)start_high << 32) | start_low);
         end = (((uint64_t)end_high << 32) | end_low);

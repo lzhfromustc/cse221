@@ -153,12 +153,13 @@ uint64_t lat_mem(uint64_t size_LList) {
     
 
     // sfence and measurement
-    _mm_sfence();
+    
     asm volatile("RDTSCP\n\t"
                      "mov %%edx, %0\n\t"
                      "mov %%eax, %1\n\t"
                      "CPUID\n\t"
                      : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
+    _mm_sfence();
 
     garbage_use_ptr(cur_node); // prevent compiler from optimize out our code
 

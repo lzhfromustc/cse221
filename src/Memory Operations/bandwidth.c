@@ -54,12 +54,13 @@ int measure_bw(uint64_t iteration) {
         #undef	DOIT
 
         // sfence and measurement
-        _mm_sfence();
+        
         asm volatile("RDTSCP\n\t"
                         "mov %%edx, %0\n\t"
                         "mov %%eax, %1\n\t"
                         "CPUID\n\t"
                         : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
+        _mm_sfence();
 
         garbage_use_int(sum); // prevent compiler from optimize out our code
 
