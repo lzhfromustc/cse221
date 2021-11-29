@@ -7,17 +7,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <server.h>
 
-void round_trip_server(char *addr, unsigned short port)
+void conn_server(char *addr, unsigned short port)
 {
-    /*
-    Domain： AF_INET IPV4
-    Type: SOCK_STREAM TCP
-    Protocol: 0 IP
-    */
     struct sockaddr_in serv_addr;
-    int serv_fd, accept_fd, serv_opt = 1, serv_addr_len = sizeof(serv_addr);
+    int serv_fd, accept_fd, serv_opt = 1, serv_addr_len = sizeof(serv_addr), i;
     char buffer[64] = {0};
     char message[64] = "Hello from server!";
 
@@ -35,8 +29,8 @@ void round_trip_server(char *addr, unsigned short port)
 
 
     serv_addr.sin_family = AF_INET;
-    inet_pton(AF_INET, addr, &(serv_addr.sin_addr));
-    serv_addr.sin_port = (unsigned short)(port);
+    serv_addr.sin_addr.s_addr = inet_addr(addr);
+    serv_addr.sin_port = htons(port);
 
     if (bind(serv_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
@@ -49,16 +43,26 @@ void round_trip_server(char *addr, unsigned short port)
         exit(EXIT_FAILURE);
     }
     
-    if ((accept_fd = accept(serv_fd, (struct sockaddr *)&serv_addr, (socklen_t*)&serv_addr_len))< 0)
+    while(1)
     {
-        perror("ERROR accepting connection");
-        exit(EXIT_FAILURE);
+        if ((accept_fd = accept(serv_fd, (struct sockaddr *)&serv_addr, (socklen_t*)&serv_addr_len))< 0)
+        {
+            perror("ERROR accepting connection");
+            exit(EXIT_FAILURE);
+        }
+        read(accept_fd, buffer, sizeof(char));
+        send(accept_fd, message, sizeof(char), 0);
+        
+        close(accept_fd);
     }
-    printf("A client has connected\n");
-    read(accept_fd, buffer, 64);
-    printf("Receive: %s\n", buffer);
-    send(accept_fd, message, strlen(message), 0);
-    printf("Messge sent\n");
-    close(accept_fd);
     close(serv_fd);
+}
+
+int main(){
+    char* addr = "127.0.0.1";
+    unsigned short port = 9999;
+
+    conn_server(addr, port, 1000);
+
+    return 0;
 }

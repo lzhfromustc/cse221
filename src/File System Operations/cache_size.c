@@ -24,7 +24,8 @@ int main(int argc, const char * argv[])
         lseek(fd, -2*BLOCKSIZE, SEEK_CUR);
         ssize_t bytes = read(fd, buf, BLOCKSIZE);
         if (bytes <= 0 || totalBytes >= FILESIZE)
-            break;
+                break;
+
         totalBytes += bytes;
     }
     
