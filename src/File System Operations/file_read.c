@@ -6,11 +6,6 @@
 #include <time.h>
 #include <fcntl.h>
 #include <stdint.h>
-#include <sys/mman.h>
-#include <xmmintrin.h>
-#include <errno.h>
-
-extern int errno;
 
 const off_t BLOCKSIZE = 4*1024;
 off_t FILESIZE;
@@ -24,9 +19,6 @@ int main(int argc, const char *argv[]) //input the filesize and name of file
     FILESIZE = atoll(argv[1]);
     srand((unsigned int)time(NULL));
 
-
-
-    
     double seq_ans = avg_seq_time(argv[2]);
     
     double ran_ans = avg_random_time(argv[2]);
@@ -48,24 +40,8 @@ double avg_seq_time(char *file)
     uint64_t start, end, total = 0;
     unsigned start_low, start_high, end_low, end_high;
     
-    errno = 0;
-    ssize_t bytes = read(fd, buf, BLOCKSIZE); // return #byte when read successfully
-
-    if (bytes <= 0) {
-            printf("bytes = %ld \n", bytes);
-            printf("Cannot open the file in cp1 \n");
-            printf("\n");
-    }
-
-    if (errno!= 0){
-            printf("errno值: %d\n",errno);
-            printf("错误信息：%s\n",strerror(errno));
-    }
-
-
     while (1) {
 
-        _mm_sfence();
         asm volatile("CPUID\n\t"
                      "RDTSC\n\t"
                      "mov %%edx, %0\n\t"
@@ -84,7 +60,6 @@ double avg_seq_time(char *file)
                      "mov %%eax, %1\n\t"
                      "CPUID\n\t"
                      : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
-        _mm_sfence();
 
         start = (((uint64_t)start_high << 32) | start_low);
         end = (((uint64_t)end_high << 32) | end_low);
@@ -113,7 +88,6 @@ double avg_random_time(char *file)
     for (i = 0; i < num; i++) {
         off_t k = rand() % num;
 
-        _mm_sfence();
         asm volatile("CPUID\n\t"
                      "RDTSC\n\t"
                      "mov %%edx, %0\n\t"
@@ -133,7 +107,6 @@ double avg_random_time(char *file)
                      "mov %%eax, %1\n\t"
                      "CPUID\n\t"
                      : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
-        _mm_sfence();
         
         start = (((uint64_t)start_high << 32) | start_low);
         end = (((uint64_t)end_high << 32) | end_low);

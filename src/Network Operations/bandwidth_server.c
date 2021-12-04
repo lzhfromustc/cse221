@@ -63,10 +63,10 @@ void bw_server(char *addr, unsigned short port, int bytes, int n)
 }
 
 int main(){
-    char* addr = "127.0.0.1";
+    char* addr = "0.0.0.0";
     unsigned short port = 12580;
 
-    bw_server(addr, port, 1 << 20, 100);
+    bw_server(addr, port, 1 << 16, 100);
 
     return 0;
 }

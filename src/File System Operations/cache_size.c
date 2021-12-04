@@ -19,6 +19,11 @@ int main(int argc, const char * argv[])
     lseek(fd, FILESIZE - 1, SEEK_SET);
     off_t totalBytes = 0;
 
+        ssize_t bytes = read(fd, buf, BLOCKSIZE);
+        if (bytes <= 0 || totalBytes >= FILESIZE)
+                printf("Error, cannot open the file");
+
+
     //Then we read the file from end to start to put the file into cache
     while(1){
         lseek(fd, -2*BLOCKSIZE, SEEK_CUR);
