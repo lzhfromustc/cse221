@@ -14,9 +14,9 @@ int main() {
     printf("=====Starting memory latency measurement\n");
 
     // parameters
-    uint64_t num_dot = 15; // number of maximum data points in the figure; default: 15 points
+    uint64_t num_dot = 40; // number of maximum data points in the figure; default: 50 points
     uint64_t min_size = 1<<8; // the minimal linked list size; default: 256 B
-    uint64_t max_size = 64<<20; // the maximum linked list size; default: 16 MB
+    uint64_t max_size = 128 * 1<<20; // the maximum linked list size; default: 128 MB
     
     measure_mem_lat(num_dot, min_size, max_size);
 
@@ -27,10 +27,35 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
 
     printf("Size of Node:%ld\n\n", sizeof(Node));
 
-    // set sizes of multiple LLists
-    // grow in 2^n
+// set sizes of multiple LLists
+    
     uint64_t vec_size_LList[num_dot];
-    for (int i = 0; i < num_dot; i++) {
+
+//planA: grow in 2^n
+    
+    // for (int i = 0; i < num_dot; i++) {
+    //     uint64_t size = min_size * 1<<i;
+    //     if (size > max_size) {
+    //         vec_size_LList[i] = max_size;
+    //         break;
+    //     }
+    //     vec_size_LList[i] = size;
+    // }
+
+//planB: grow linearly
+
+    // 
+    // for (int i = 0; i < num_dot; i++) {
+    //     vec_size_LList[i] = min_size + i * size_gap;
+    // }
+
+//planC: the first 10 grow in 2^n, the rest linearly
+    int i = 0;
+    int begin_linear = 11;
+    int begin_linear2 = 19;
+    int begin_linear3 = 29;
+
+    for (i = 0; i < begin_linear; i++) {
         uint64_t size = min_size * 1<<i;
         if (size > max_size) {
             vec_size_LList[i] = max_size;
@@ -39,14 +64,38 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
         vec_size_LList[i] = size;
     }
 
+    uint64_t last_size = vec_size_LList[begin_linear - 1];
+
+
+    for (i = begin_linear; i < begin_linear2; i++) {
+        vec_size_LList[i] = last_size + (i - begin_linear + 1) * 100000;
+    }
+
+    last_size = vec_size_LList[begin_linear2 - 1];
+
+    for (i = begin_linear2; i < begin_linear3; i++) {
+        vec_size_LList[i] = last_size + (i - begin_linear2 + 1) * 1000000;
+    }
+
+    last_size = vec_size_LList[begin_linear3 - 1];
+
+    uint64_t size_gap = (max_size - last_size) / (num_dot - begin_linear3);
+
+    for (i = begin_linear3; i < num_dot; i++) {
+        vec_size_LList[i] = last_size + (i - begin_linear3 + 1) * size_gap;
+    }
+
     ///DEBUG
-    #ifdef DEBUG
+    // #ifdef DEBUG
     printf("vec_size_LList:");
     for (int i = 0; i < num_dot; i++) {
         printf("\t%lu", vec_size_LList[i]);
+        if (vec_size_LList[i] > max_size) {
+            printf("\tlarger!\t");
+        }
     }
     printf("\n");
-    #endif
+    // #endif
     
 
 
@@ -60,12 +109,18 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
         Result r = lat_mem(vec_size_LList[i]);
         vec_latency[i] = r.result;
         uint64_t s = r.size;
-        if (vec_latency[i] > prev_latency) { // Normal
-            // This is a little inaccurate: maybe the last few members in LList is not accessed
-            vec_ave_latency[i] = cycle_amplify * (vec_latency[i] - prev_latency) / (s - prev_size); 
-        } else {
-            vec_ave_latency[i] = 0;
-        }
+
+        // plan A: deduct previous size?
+        // if (vec_latency[i] > prev_latency) { // Normal
+        //     // This is a little inaccurate: maybe the last few members in LList is not accessed
+        //     vec_ave_latency[i] = cycle_amplify * (vec_latency[i] - prev_latency) / (s - prev_size); 
+        // } else {
+        //     vec_ave_latency[i] = 0;
+        // }
+        
+        // plan B: just average. 
+        vec_ave_latency[i] = cycle_amplify * vec_latency[i] / s; 
+
         
         prev_latency = vec_latency[i];
         prev_size = s;
@@ -104,9 +159,11 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
 
 Result lat_mem(uint64_t size_LList) {
 
+    memcpy(garbage1, garbage2, SIZE_GARBAGE);
+
     // Step 1: init a linked list of size size_LList, with len_LList nodes
     Node *LList;
-    int len_LList;
+    uint64_t len_LList;
     LList = (Node *) malloc(size_LList);
 
     // Do we need this line?
@@ -131,9 +188,9 @@ Result lat_mem(uint64_t size_LList) {
     int stride = 64; // in byte
     int indexGap = stride / sizeof(Node); // stride / 8
 
-    int next_index = indexGap;
-    int last_index = 0;
-    int num_Node = 0;
+    uint64_t next_index = indexGap;
+    uint64_t last_index = 0;
+    uint64_t num_Node = 0;
     while (next_index < len_LList - 1) {
         
         LList[last_index].next = &LList[next_index];
@@ -146,7 +203,16 @@ Result lat_mem(uint64_t size_LList) {
         next_index += indexGap;   
         num_Node ++;     
     }
-    LList[next_index].next = NULL;
+
+    #ifdef DEBUG
+    printf("size of each Node:%ld\tsize_LList:%lu\tlast_index:%lu\n", (sizeof(Node)), size_LList, last_index);
+    #endif
+
+    LList[last_index].next = NULL;
+
+    #ifdef DEBUG
+    printf("last_index.next NULL OK\n");
+    #endif
 
     #ifdef DEBUG
     if (size_LList == 256) {
@@ -163,57 +229,78 @@ Result lat_mem(uint64_t size_LList) {
 
     // Step 2: measurement
 
-    register int count_100 = (num_Node-1) / 100;
-    register int count_rest = (num_Node-1) % 100;
-    register int i;
-    Node *cur_node;
-    cur_node = LList;
-
-    // variables for the cycle count
-    uint64_t start, end, total = 0;
-    unsigned start_low, start_high, end_low, end_high;
-
-    // sfence and measurement
-    _mm_sfence();
-    asm volatile("CPUID\n\t"
-                     "RDTSC\n\t"
-                     "mov %%edx, %0\n\t"
-                     "mov %%eax, %1\n\t"
-                     : "=r"(start_high), "=r"(start_low)::"%rax", "%rbx", "%rcx", "%rdx");
-
-    // Note that each access "ONE" is loading a whole cache line, which is 64 bits
-    for (i = 0; i < count_100; i++) {
-        HUNDRED;
-    }
-    for (i = 0; i < count_rest; i++) {
-        ONE;
-    }
-   
-
+    register uint64_t count_100 = (num_Node-1) / 100;
+    register uint64_t count_rest = (num_Node-1) % 100;
+    register uint64_t i = 0;
+    int j = 0;
     
 
-    // sfence and measurement
+    // We need to run this measurement multiple times, and throw away the first few times to make sure the LList is stored in caches
+
+    int num_experiment = 50;
+    int num_throw_experiment = 10;
+
+    uint64_t total_latency, ave_latency = 0;
+
+    for (j = 0; j < num_experiment; j++) {
+        Node *cur_node;
+        cur_node = LList;
+
+        // variables for the cycle count
+        uint64_t start, end, total = 0;
+        unsigned start_low, start_high, end_low, end_high;
+
+        // sfence and measurement
+        _mm_sfence();
+        asm volatile("CPUID\n\t"
+                        "RDTSC\n\t"
+                        "mov %%edx, %0\n\t"
+                        "mov %%eax, %1\n\t"
+                        : "=r"(start_high), "=r"(start_low)::"%rax", "%rbx", "%rcx", "%rdx");
+
+        for (i = 0; i < count_100; i++) {
+            HUNDRED;
+        }
+        for (i = 0; i < count_rest; i++) {
+            ONE;
+        }
     
-    asm volatile("RDTSCP\n\t"
-                     "mov %%edx, %0\n\t"
-                     "mov %%eax, %1\n\t"
-                     "CPUID\n\t"
-                     : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
-    _mm_sfence();
 
-    garbage_use_ptr(cur_node); // prevent compiler from optimize out our code
+        
 
-    start = (((uint64_t)start_high << 32) | start_low);
-    end = (((uint64_t)end_high << 32) | end_low);
-    total = end - start;
+        // sfence and measurement
+        
+        asm volatile("RDTSCP\n\t"
+                        "mov %%edx, %0\n\t"
+                        "mov %%eax, %1\n\t"
+                        "CPUID\n\t"
+                        : "=r"(end_high), "=r"(end_low)::"%rax", "%rbx", "%rcx", "%rdx");
+        _mm_sfence();
 
-    total = total - num_Node * 1; // minus 1 cycle used to execute load instruction
+        garbage_use_ptr(cur_node); // prevent compiler from optimize out our code
+
+        start = (((uint64_t)start_high << 32) | start_low);
+        end = (((uint64_t)end_high << 32) | end_low);
+        total = end - start;
+
+        // Should we minus 1 cycle used to execute load instruction? 
+        total = total - num_Node * 1; 
+
+        // throw away the first few measurements, since the LList may not be fully loaded to occupy as much as cache possible
+        if (j < num_throw_experiment) {
+            total_latency += total;
+        }
+    }
+
+    ave_latency = total_latency / (num_experiment - num_throw_experiment);
+
+    
 
     free(LList);
 
     Result r;
-    r.result = total;
-    r.size = num_Node * stride;
+    r.result = ave_latency;
+    r.size = num_Node * 8; // Each time load 8 bytes
 
     return r;
 }

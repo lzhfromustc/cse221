@@ -59,7 +59,7 @@ void conn_server(char *addr, unsigned short port)
 }
 
 int main(){
-    char* addr = "127.0.0.1";
+    char* addr = "0.0.0.0";
     unsigned short port = 9999;
 
     conn_server(addr, port);

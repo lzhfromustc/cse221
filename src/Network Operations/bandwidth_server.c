@@ -10,6 +10,7 @@
 
 void bw_server(char *addr, unsigned short port, int bytes, int n)
 {
+    printf("%d\n", bytes);
     struct sockaddr_in serv_addr;
     int serv_fd, accept_fd, serv_opt = 1, serv_addr_len = sizeof(serv_addr), i;
     char* buffer = (char*)malloc(bytes);
@@ -66,7 +67,7 @@ int main(){
     char* addr = "0.0.0.0";
     unsigned short port = 12580;
 
-    bw_server(addr, port, 1 << 16, 100);
+    bw_server(addr, port, 1 << 10, 10000);
 
     return 0;
 }

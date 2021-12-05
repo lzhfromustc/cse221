@@ -61,7 +61,7 @@ void rtt_server(char *addr, unsigned short port, int n)
 }
 
 int main(){
-    char* addr = "127.0.0.1";
+    char* addr = "0.0.0.0";
     unsigned short port = 9999;
 
     rtt_server(addr, port, 1000);

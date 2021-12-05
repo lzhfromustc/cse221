@@ -58,12 +58,12 @@ double rtt_client(char* addr, unsigned short port, int n)
 }
 
 int main(){
-    char* addr = "127.0.0.1";
+    char* addr = "100.81.36.170" ;
     unsigned short port = 9999;
     
     double cycles = rtt_client(addr, port, 1000);
     printf("%.2f\n", cycles);
-    printf("%.2f ms\n", cycles * 1000 / 3500000000);
+    printf("%.2f ms\n", cycles * 1000 / 3600000000);
 
     return 0;
 }

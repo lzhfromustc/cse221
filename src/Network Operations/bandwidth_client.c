@@ -10,7 +10,7 @@
 
 double bw_client(char* addr, unsigned short port, int bytes, unsigned long freq, int n)
 {
-    uint64_t start, end, min = INT_MAX;
+    uint64_t start, end, total = 0, received = 0;
     unsigned start_low, start_high, end_low, end_high;
     int sockfd, i;
     struct sockaddr_in serveraddr;
@@ -41,7 +41,7 @@ double bw_client(char* addr, unsigned short port, int bytes, unsigned long freq,
                      : "=r"(start_high), "=r"(start_low)::"%rax", "%rbx", "%rcx", "%rdx");
 
         // send(sockfd, message, bytes, 0);
-        read(sockfd, buffer, bytes);
+        received += read(sockfd, buffer, bytes);
 
         asm volatile("RDTSCP\n\t"
                      "mov %%edx, %0\n\t"
@@ -51,7 +51,7 @@ double bw_client(char* addr, unsigned short port, int bytes, unsigned long freq,
         
         start = (((uint64_t)start_high << 32) | start_low);
         end = (((uint64_t)end_high << 32) | end_low);
-        min = end - start < min ? end - start : min;
+        total += end - start;
     }
     close(sockfd);
     free(message);
@@ -59,15 +59,16 @@ double bw_client(char* addr, unsigned short port, int bytes, unsigned long freq,
     
     printf("%d, %lu\n", bytes, freq);
 
-    return (bytes * 1.0 / 1000000) * freq / min;
+    return (received * 1.0 / 1000000) * freq / total;
 }
 
 int main(){
-    char* addr = "127.0.0.1";
+    char* addr = "100.81.36.170";
     unsigned short port = 12580;
     
-    double cycles = bw_client(addr, port, 1 << 20, 3500000000, 100);
-    printf("%.2f\n", cycles);
+    double bandwidth = bw_client(addr, port, 1 << 10, 3600000000, 10000);
+    printf("bandwidth: %.2f\n", bandwidth);
+    // printf("bandwidth: %.2f\n",  1.0 * 3500000000/1000/cycles);
 
     return 0;
 }
