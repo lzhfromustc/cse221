@@ -10,22 +10,24 @@ typedef struct Node {
 } Node;
 
 
-int main() {
-    printf("=====Starting memory latency measurement\n");
+// int main() {
+//     printf("=====Starting memory latency measurement\n");
 
-    // parameters
-    uint64_t num_dot = 40; // number of maximum data points in the figure; default: 50 points
-    uint64_t min_size = 1<<8; // the minimal linked list size; default: 256 B
-    uint64_t max_size = 128 * 1<<20; // the maximum linked list size; default: 128 MB
+//     // parameters
+//     uint64_t num_dot = 40; // number of maximum data points in the figure; default: 40 points
+//     uint64_t min_size = 1<<8; // the minimal linked list size; default: 256 B; Note: we will ignore the first 4 data points
+//     uint64_t max_size = 128 * 1<<20; // the maximum linked list size; default: 128 MB
     
-    measure_mem_lat(num_dot, min_size, max_size);
+//     measure_mem_lat(num_dot, min_size, max_size);
 
-    printf("=====Finished memory latency measurement\n\n\n");
-}
+//     printf("=====Finished memory latency measurement\n\n\n");
+// }
 
 int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
 
+    #ifdef DEBUG
     printf("Size of Node:%ld\n\n", sizeof(Node));
+    #endif
 
 // set sizes of multiple LLists
     
@@ -86,7 +88,7 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
     }
 
     ///DEBUG
-    // #ifdef DEBUG
+    #ifdef DEBUG
     printf("vec_size_LList:");
     for (int i = 0; i < num_dot; i++) {
         printf("\t%lu", vec_size_LList[i]);
@@ -95,7 +97,7 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
         }
     }
     printf("\n");
-    // #endif
+    #endif
     
 
 
@@ -126,23 +128,24 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
         prev_size = s;
     }
 
-    // print result
+    // print result, ignore the first omit_points results
+    int omit_points = 2;
     printf("The size_of_linked_list:");
-    for (int i = 0; i < num_dot; i++) {
+    for (int i = omit_points; i < num_dot; i++) {
         printf(" %lu", vec_size_LList[i]);
     }
+    // printf("\n");
+    // printf("The total latency_of_mem_read:");
+    // for (int i = omit_points; i < num_dot; i++) {
+    //     printf(" %lu", vec_latency[i]);
+    // }
     printf("\n");
-    printf("The total latency_of_mem_read:");
-    for (int i = 0; i < num_dot; i++) {
-        printf(" %lu", vec_latency[i]);
+    printf("The average latency_of_mem_read (In nanosecond):");
+    for (int i = omit_points; i < num_dot; i++) {
+        printf(" %lf", ((double) vec_ave_latency[i]) / 3.8655 / 1000); // 3.8655 = 3.6 * 1024 * 1024 *1024 / 10 ^ 9
     }
     printf("\n");
-    printf("The average latency_of_mem_read (In 1/%d cycles):", cycle_amplify);
-    for (int i = 0; i < num_dot; i++) {
-        printf(" %lu", vec_ave_latency[i]);
-    }
-    printf("\n");
-    printf("Please ignore this number:%lu\n", garbage_usage);
+    // printf("Please ignore this number:%lu\n", garbage_usage);
 
     // free variables
    
@@ -185,7 +188,7 @@ Result lat_mem(uint64_t size_LList) {
     // So we have a stride variable. node[i] points to node[i + (stride / sizeof(node)) ]. When stride is no less than 64 bytes, our measurement will be OK
     // However, if stride is a constant, the CPU may predict and prefetch the next cache line. Let's see what will happen.
 
-    int stride = 64; // in byte
+    int stride = 16; // in byte
     int indexGap = stride / sizeof(Node); // stride / 8
 
     uint64_t next_index = indexGap;
@@ -284,10 +287,10 @@ Result lat_mem(uint64_t size_LList) {
         total = end - start;
 
         // Should we minus 1 cycle used to execute load instruction? 
-        total = total - num_Node * 1; 
+        // total = total - num_Node * 1; 
 
         // throw away the first few measurements, since the LList may not be fully loaded to occupy as much as cache possible
-        if (j < num_throw_experiment) {
+        if (j >= num_throw_experiment) {
             total_latency += total;
         }
     }
@@ -300,7 +303,7 @@ Result lat_mem(uint64_t size_LList) {
 
     Result r;
     r.result = ave_latency;
-    r.size = num_Node * 8; // Each time load 8 bytes
+    r.size = (num_Node - 1) * 8; // Each time load 8 bytes
 
     return r;
 }

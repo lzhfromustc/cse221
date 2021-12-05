@@ -78,7 +78,7 @@ int measure_bw(uint64_t iteration) {
     printf("The bandwidth (CPU cycle) of reading %f MB in main memory:%f\n", size_in_MB, cycles_per_LEN_VEC_INT);
     printf("Which is %f MB/s\n", bw_MB_per_S);
 
-    printf("Please ignore this number:%lu\n",garbage_int_usage);
+    // printf("Please ignore this number:%lu\n",garbage_int_usage);
 
     return 0;
 }

@@ -117,11 +117,11 @@ int main(){
     
     double cycles = setup_client(addr, port, 100);
     printf("%.2f\n", cycles);
-    printf("%.4f ms\n", cycles * 100 / 3500000000);
+    printf("%.4f ms\n", cycles * 100 / 3600000000);
 
     cycles = teardown_client(addr, port, 100);
     printf("%.2f\n", cycles);
-    printf("%.4f ms\n", cycles * 100 / 3500000000);
+    printf("%.4f ms\n", cycles * 100 / 3600000000);
 
     return 0;
 }
