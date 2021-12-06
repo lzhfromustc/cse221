@@ -13,25 +13,15 @@ int main(int argc, const char *argv[]) //input the filesize and name of file
 {
     void* buf = malloc(BLOCKSIZE);
 	const off_t FILESIZE = atoll(argv[1]);
-    int fd = open(argv[2], O_RDONLY | O_SYNC);
-
-    //We first seek to the last block in the file
-    lseek(fd, FILESIZE - 1, SEEK_SET);
-
-    ssize_t bytes = read(fd, buf, BLOCKSIZE);
-    if (bytes <= 0)
-        printf("Error, cannot open the file in cp1");
 
     uint64_t start, end, total = 0;
     unsigned start_low, start_high, end_low, end_high;
     
-    close(fd);
 
-    //We close the file and read it again
-    fd = open(argv[2], O_RDONLY| O_SYNC);
+    int fd = open(argv[2], O_RDONLY| O_SYNC);
 
 
-    lseek(fd, FILESIZE - 1, SEEK_SET);
+    //lseek(fd, FILESIZE - 1, SEEK_SET);
     while (1) {
         
         asm volatile("CPUID\n\t"
@@ -42,7 +32,7 @@ int main(int argc, const char *argv[]) //input the filesize and name of file
 
         ssize_t bytes = read(fd, buf, BLOCKSIZE);
         if (bytes <= 0){
-            printf("Error, cannot open the file \n");
+            printf("Finish read the file \n");
             break;
         }
 

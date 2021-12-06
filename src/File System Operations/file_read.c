@@ -35,6 +35,7 @@ double avg_seq_time(char *file)
     // }
 
     printf("fd = %d \n",fd);
+    lseek(fd, FILESIZE - 1, SEEK_SET);
 
     void *buf = malloc(BLOCKSIZE);
     uint64_t start, end, total = 0;

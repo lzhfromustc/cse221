@@ -58,7 +58,7 @@ double rtt_client(char* addr, unsigned short port, int n)
 }
 
 int main(){
-    char* addr = "100.81.36.170" ;
+    char* addr = "127.0.0.1" ;
     unsigned short port = 9999;
     
     double cycles = rtt_client(addr, port, 1000);

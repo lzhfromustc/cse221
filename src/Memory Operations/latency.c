@@ -75,17 +75,17 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
 
     last_size = vec_size_LList[begin_linear2 - 1];
 
-    for (i = begin_linear2; i < begin_linear3; i++) {
+    for (i = begin_linear2; i < num_dot; i++) {
         vec_size_LList[i] = last_size + (i - begin_linear2 + 1) * 1000000;
     }
 
-    last_size = vec_size_LList[begin_linear3 - 1];
+    // last_size = vec_size_LList[begin_linear3 - 1];
 
-    uint64_t size_gap = (max_size - last_size) / (num_dot - begin_linear3);
+    // uint64_t size_gap = (max_size - last_size) / (num_dot - begin_linear3);
 
-    for (i = begin_linear3; i < num_dot; i++) {
-        vec_size_LList[i] = last_size + (i - begin_linear3 + 1) * size_gap;
-    }
+    // for (i = begin_linear3; i < num_dot; i++) {
+    //     vec_size_LList[i] = last_size + (i - begin_linear3 + 1) * size_gap;
+    // }
 
     ///DEBUG
     #ifdef DEBUG
@@ -130,7 +130,7 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
 
     // print result, ignore the first omit_points results
     int omit_points = 2;
-    printf("The size_of_linked_list:");
+    printf("X-axis: The size_of_linked_list:");
     for (int i = omit_points; i < num_dot; i++) {
         printf(" %lu", vec_size_LList[i]);
     }
@@ -140,14 +140,30 @@ int measure_mem_lat(uint64_t num_dot, uint64_t min_size, uint64_t max_size) {
     //     printf(" %lu", vec_latency[i]);
     // }
     printf("\n");
-    printf("The average latency_of_mem_read (In nanosecond):");
+    printf("Y-axis: The average latency_of_mem_read (In nanosecond):");
     for (int i = omit_points; i < num_dot; i++) {
         printf(" %lf", ((double) vec_ave_latency[i]) / 3.8655 / 1000); // 3.8655 = 3.6 * 1024 * 1024 *1024 / 10 ^ 9
     }
     printf("\n");
     // printf("Please ignore this number:%lu\n", garbage_usage);
 
-    // free variables
+    // print to json, 
+    FILE *fp = fopen("latency_result.json", "w+");
+    fprintf(fp, "{ \"size_byte\": [");
+    for (int i = omit_points; i < num_dot; i++) {
+        fprintf(fp, "%lu", vec_size_LList[i]);
+        if (i != num_dot - 1) {
+            fprintf(fp, ",");
+        }
+    }
+    fprintf(fp, "], \"latency_ns\": [");
+    for (int i = omit_points; i < num_dot; i++) {
+        fprintf(fp, "%lf", ((double) vec_ave_latency[i]) / 3.8655 / 1000);
+        if (i != num_dot - 1) {
+            fprintf(fp, ",");
+        }
+    }
+    fprintf(fp, "] }");
    
 }
 

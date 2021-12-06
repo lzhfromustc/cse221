@@ -67,7 +67,7 @@ int main(){
     char* addr = "0.0.0.0";
     unsigned short port = 12580;
 
-    bw_server(addr, port, 1 << 10, 10000);
+    bw_server(addr, port, 1 << 16, 10000);
 
     return 0;
 }

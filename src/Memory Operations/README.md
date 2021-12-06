@@ -1,3 +1,7 @@
+***This document is out of date now. Please see our paper***
+
+
+
 ***Memory Operations***
 
 **From instructor**

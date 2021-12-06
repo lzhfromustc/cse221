@@ -112,14 +112,16 @@ double teardown_client(char* addr, unsigned short port, int n)
 }
 
 int main(){
-    char* addr = "100.81.36.170 ";
+    char* addr = "127.0.0.1";
     unsigned short port = 9999;
     
     double cycles = setup_client(addr, port, 100);
+    printf("Setup overhead:\n");
     printf("%.2f\n", cycles);
     printf("%.4f ms\n", cycles * 100 / 3600000000);
 
     cycles = teardown_client(addr, port, 100);
+    printf("Teardown overhead:\n");
     printf("%.2f\n", cycles);
     printf("%.4f ms\n", cycles * 100 / 3600000000);
 

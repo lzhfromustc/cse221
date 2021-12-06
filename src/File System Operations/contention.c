@@ -9,9 +9,9 @@
 
 const off_t BLOCKSIZE = 4*1024;
 
-int main(){
-	pid_t pids[8];
-	int n = 8;
+int main(int argc, const char *argv[]){
+	int n = atoll(argv[1]);
+	pid_t pids[n];
 	unsigned sum = 0;
 	for(int i=0; i<n; i++)
 	{
@@ -32,13 +32,12 @@ int main(){
 void readFile(int i)
 {
 	void* buffer = malloc(BLOCKSIZE);
-	char* files[] = {"file_4_read/size64k_0", "file_4_read/size64k_1", "file_4_read/size64k_2", "file_4_read/size64k_3", "file_4_read/size64k_4", "file_4_read/size64k_5", "file_4_read/size64k_6", "file_4_read/size64k_7"};
+	char* files[] = {"file_4_read/size64k_0", "file_4_read/size64k_1", "file_4_read/size64k_2", "file_4_read/size64k_3", "file_4_read/size64k_4", "file_4_read/size64k_5", "file_4_read/size64k_6", "file_4_read/size64k_7","file_4_read/size64k_8","file_4_read/size64k_9","file_4_read/size64k_10"};
 	int fd = open(files[i], O_RDONLY | O_SYNC);
 	const off_t FILESIZE = 64 * 1024;
     uint64_t start, end, total = 0;
     unsigned start_low, start_high, end_low, end_high;
     
-    lseek(fd, FILESIZE - 1, SEEK_SET);
 	while(1)
 	{
 		asm volatile("CPUID\n\t"

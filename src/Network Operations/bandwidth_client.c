@@ -63,11 +63,11 @@ double bw_client(char* addr, unsigned short port, int bytes, unsigned long freq,
 }
 
 int main(){
-    char* addr = "100.81.36.170";
+    char* addr = "127.0.0.1";
     unsigned short port = 12580;
     
-    double bandwidth = bw_client(addr, port, 1 << 10, 3600000000, 10000);
-    printf("bandwidth: %.2f\n", bandwidth);
+    double bandwidth = bw_client(addr, port, 1 << 16, 3600000000, 10000);
+    printf("bandwidth: %.2f MB/s\n", bandwidth);
     // printf("bandwidth: %.2f\n",  1.0 * 3500000000/1000/cycles);
 
     return 0;
